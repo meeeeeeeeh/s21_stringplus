@@ -127,7 +127,6 @@
 #endif
 //  Возвращает новую строку, в которой удаляются все начальные и
 //  конечные вхождения набора заданных символов (trim_chars) из данной строки
-//  (src)
 void *s21_trim(const char *src, const char *trim_chars) {
   char *res = S21_NULL;
   if (src != S21_NULL && trim_chars != S21_NULL) {
@@ -172,14 +171,15 @@ void *s21_trim(const char *src, const char *trim_chars) {
     }
     if (!first_char && !last_char) {  // и в начале и в конце не было совпадений
                                       // = копируем полностью
-      res = (char *)malloc(len_src + 1);
+      res = calloc(len_src + 1, sizeof(char));
+      res[0] = '\0';
       s21_strncpy(res, src, len_src);
     } else {
       if (index2 - index1 <= 0) {  // нужно удалить всю строку (??)
         res = (char *)malloc(1);
         res[0] = '\0';
       } else {
-        res = (char *)malloc(index2 - index1 + 2);
+        res = calloc(index2 - index1 + 2, sizeof(char));
         s21_strncpy(res, src + index1, index2 - index1 + 1);
         res[index2 - index1 + 1] = '\0';
       }
@@ -188,17 +188,16 @@ void *s21_trim(const char *src, const char *trim_chars) {
   return res;
 }
 
-// если индекс больше длины строки то вернет ту же строку, но хз правильно ли
 //  возвращает копию src в которую вставлена str
 void *s21_insert(const char *src, const char *str, s21_size_t start_index) {
-  s21_size_t len_src = s21_strlen(src);
-  s21_size_t len_str = s21_strlen(str);
-  s21_size_t len = len_src + len_str;
-  char *res = (char *)malloc(len + 1);
-
+  char *res;
   if (str == S21_NULL || src == S21_NULL) {
     res = S21_NULL;
   } else {
+    s21_size_t len_src = s21_strlen(src);
+    s21_size_t len_str = s21_strlen(str);
+    s21_size_t len = len_src + len_str;
+    res = (char *)malloc(len + 1);
     for (s21_size_t i = 0; i < len; i++) {
       if (i == start_index) {
         for (s21_size_t k = 0; k < len_str; k++, i++) {
@@ -388,11 +387,11 @@ char *s21_strncpy(char *dest, const char *src, s21_size_t n) {
 // если нет
 int s21_strncmp(const char *str1, const char *str2, s21_size_t n) {
   int res = 0;
-
-  for (s21_size_t i = 0; i < n; i++) {
+  int flag = 1;
+  for (s21_size_t i = 0; flag && i < n; i++) {
     if (str1[i] != str2[i] || str1[i] == '\0' || str2[i] == '\0') {
       res = str1[i] - str2[i];
-      break;
+      flag = 0;
     }
   }
   return res;
@@ -424,7 +423,7 @@ char *s21_strncat(char *dest, const char *src, s21_size_t n) {
       }
     }
   }
-  dest[s21_strlen(dest)] = '\0';
+  dest[len_dest + n] = '\0';
   return dest;
 }
 
@@ -453,11 +452,11 @@ int s21_memcmp(const void *str1, const void *str2, s21_size_t n) {
   const unsigned char *array1 = str1;
   const unsigned char *array2 = str2;
   int res = 0;
-
-  for (s21_size_t i = 0; i < n; i++) {
+  int flag = 1;
+  for (s21_size_t i = 0; i < n && flag; i++) {
     if (array1[i] != array2[i]) {
       res = array1[i] - array2[i];
-      break;
+      flag = 0;
     }
   }
   return res;

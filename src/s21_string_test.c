@@ -54,7 +54,7 @@ START_TEST(s21_memcmp_test_1) {
   s21_size_t len = 6;
   char str1[] = "hello";
   char str2[] = "there";
-  ck_assert_uint_eq(s21_memcmp(str1, str2, len), memcmp(str1, str2, len));
+  ck_assert_int_eq(s21_memcmp(str1, str2, len), memcmp(str1, str2, len));
 }
 END_TEST
 
@@ -62,7 +62,7 @@ START_TEST(s21_memcmp_test_2) {
   s21_size_t len = 6;
   char str1[] = "hello";
   char str2[] = "hello";
-  ck_assert_uint_eq(s21_memcmp(str1, str2, len), memcmp(str1, str2, len));
+  ck_assert_int_eq(s21_memcmp(str1, str2, len), memcmp(str1, str2, len));
 }
 END_TEST
 
@@ -70,7 +70,7 @@ START_TEST(s21_memcmp_test_3) {
   s21_size_t len = 10;
   char str1[] = "\nhello";
   char str2[] = "\nhi there";
-  ck_assert_uint_eq(s21_memcmp(str1, str2, len), memcmp(str1, str2, len));
+  ck_assert_int_eq(s21_memcmp(str1, str2, len), memcmp(str1, str2, len));
 }
 END_TEST
 
@@ -191,7 +191,7 @@ START_TEST(s21_strncmp_test_1) {
   s21_size_t len = 10;
   const char str1[] = "it's october";
   const char str2[] = "it's october";
-  ck_assert_uint_eq(s21_strncmp(str1, str2, len), strncmp(str1, str2, len));
+  ck_assert_int_eq(s21_strncmp(str1, str2, len), strncmp(str1, str2, len));
 }
 END_TEST
 
@@ -199,7 +199,7 @@ START_TEST(s21_strncmp_test_2) {
   s21_size_t len = 10;
   const char str1[] = "hel\0lo";
   const char str2[] = "hel\0lo";
-  ck_assert_uint_eq(s21_strncmp(str1, str2, len), strncmp(str1, str2, len));
+  ck_assert_int_eq(s21_strncmp(str1, str2, len), strncmp(str1, str2, len));
 }
 END_TEST
 
@@ -207,7 +207,7 @@ START_TEST(s21_strncmp_test_3) {
   s21_size_t len = 10;
   const char str1[] = "hel\0lo";
   const char str2[] = "hello";
-  ck_assert_uint_eq(s21_strncmp(str1, str2, len), strncmp(str1, str2, len));
+  ck_assert_int_eq(s21_strncmp(str1, str2, len), strncmp(str1, str2, len));
 }
 END_TEST
 
@@ -215,7 +215,7 @@ START_TEST(s21_strncmp_test_4) {
   s21_size_t len = 2;
   const char str1[] = "";
   const char str2[] = "";
-  ck_assert_uint_eq(s21_strncmp(str1, str2, len), strncmp(str1, str2, len));
+  ck_assert_int_eq(s21_strncmp(str1, str2, len), strncmp(str1, str2, len));
 }
 END_TEST
 
@@ -223,7 +223,7 @@ START_TEST(s21_strncmp_test_5) {
   s21_size_t len = 3;
   const char str1[] = "hola";
   const char str2[] = "holaaaaaaa";
-  ck_assert_uint_eq(s21_strncmp(str1, str2, len), strncmp(str1, str2, len));
+  ck_assert_int_eq(s21_strncmp(str1, str2, len), strncmp(str1, str2, len));
 }
 END_TEST
 
@@ -548,13 +548,15 @@ END_TEST
 
 // insert tests
 START_TEST(s21_insert_test_1) {
-  char arr[30] = "adefg";
-  char str[10] = "bc";
+  char *arr = malloc(10 * sizeof(char));
+  arr[0] = 'a';
+  arr[1] = '\0';
+  char *str = NULL;
   char *res = s21_insert(arr, str, 1);
-  char res_ok[20] = "abcdefg";
 
-  ck_assert_pstr_eq(res, res_ok);
+  ck_assert_ptr_null(res);
   free(res);
+  free(arr);
 }
 END_TEST
 
@@ -594,8 +596,8 @@ END_TEST
 START_TEST(s21_insert_test_5) {
   char arr[30] = "";
   char str[10] = "abcd";
-  char *res = s21_insert(arr, str, 2);
-  char res_ok[20] = "";
+  char *res = s21_insert(arr, str, 0);
+  char res_ok[20] = "abcd";
 
   ck_assert_pstr_eq(res, res_ok);
   free(res);
@@ -760,7 +762,7 @@ END_TEST
 
 START_TEST(s21_sprintf_f_test_11) {
   char arr[50], arr2[50];
-  long double n = 1 * pow(10, 5000);
+  long double n = pow(10, 10000);
   s21_sprintf(arr, "%05Lfb", n);
   sprintf(arr2, "%05Lfb", n);
   ck_assert_pstr_eq(arr, arr2);
@@ -1283,6 +1285,38 @@ START_TEST(s21_sprintf_p_test_3) {
   ck_assert_pstr_eq(arr, arr2);
 }
 END_TEST
+// Комбинации спецификаторов
+START_TEST(s21_sprintf_combo_test_1) {
+  char arr[100], arr2[100];
+  unsigned int n = 12;
+  double d = 123.45;
+  s21_sprintf(arr, "%-20p %%sdedf%13.5o % f %+E 1", &n, n, d, d);
+  sprintf(arr2, "%-20p %%sdedf%13.5o % f %+E 1", &n, n, d, d);
+  ck_assert_pstr_eq(arr, arr2);
+}
+END_TEST
+
+START_TEST(s21_sprintf_combo_test_2) {
+  char arr[100], arr2[100];
+  char s[] = "biba && boba";
+  unsigned long int n = 6213;
+  unsigned short u = (unsigned short)23455;
+  long double d = 123.45;
+  s21_sprintf(arr, "%hu %%dedf%-15.2lo %.5s f %+.3Lg 1", u, n, s, d);
+  sprintf(arr2, "%hu %%dedf%-15.2lo %.5s f %+.3Lg 1", u, n, s, d);
+  ck_assert_pstr_eq(arr, arr2);
+}
+END_TEST
+
+Suite *s21_sprintf_combo_suite(void) {
+  TCase *tc = tcase_create("s21_sprintf_combo_core");
+  Suite *s = suite_create("s21_sprintf_combo_tests");
+
+  tcase_add_test(tc, s21_sprintf_combo_test_1);
+  tcase_add_test(tc, s21_sprintf_combo_test_2);
+  suite_add_tcase(s, tc);
+  return s;
+}
 
 Suite *s21_sprintf_p_suite(void) {
   TCase *tc = tcase_create("s21_sprintf_p_core");
@@ -1720,6 +1754,7 @@ int main() {
   srunner_add_suite(sr, s21_sprintf_x_suite());
   srunner_add_suite(sr, s21_sprintf_n_suite());
   srunner_add_suite(sr, s21_sprintf_p_suite());
+  srunner_add_suite(sr, s21_sprintf_combo_suite());
   srunner_run_all(sr, CK_NORMAL);
   failed = srunner_ntests_failed(sr);
   srunner_free(sr);

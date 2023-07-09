@@ -50,7 +50,7 @@ void s21_add_to_str(char *str, va_list *args, format_struct *config,
   } else if (config->spec == 'X') {
     s21_spec_x(str, args, config, index, 0);
   } else if (config->spec == 'n') {
-    s21_spec_n(str, args);
+    s21_spec_n(str, args, index);
   } else if (config->spec == 'p') {
     s21_spec_p(str, args, config, index);
   } else if (config->spec == 'u') {
@@ -95,7 +95,7 @@ void s21_spec_f(char *str, long double num, format_struct *config, int *index) {
   int inf = 0;
   char ch;
   int i = 0;
-  char *str_num = calloc(100, sizeof(char));
+  char *str_num = calloc(1000, sizeof(char));
   if (!s21_double_overflow_check(str_num, config, num, 32)) {
     inf = 1;
   }
@@ -419,8 +419,9 @@ void s21_spec_x(char *str, va_list *args, format_struct *config, int *index,
   free(number);
 }
 // Запись по адресу количества записанных символов до спецификатора n
-void s21_spec_n(char *str, va_list *args) {
+void s21_spec_n(char *str, va_list *args, int *index) {
   int *res = (va_arg(*args, int *));
+  str[*index] = '\0';
   *res = s21_strlen(str);
 }
 // Записывает адресс в шетснадцатиричной система
@@ -447,6 +448,7 @@ void s21_spec_p(char *str, va_list *args, format_struct *config, int *index) {
     s21_strncat(str, number, s21_strlen(number));
     *index += s21_strlen(number);
   }
+  s21_strlen(number);
   for (; config->width > 0; (*index)++) {
     str[*index] = value;
     config->width--;

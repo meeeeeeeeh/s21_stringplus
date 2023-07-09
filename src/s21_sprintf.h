@@ -75,7 +75,7 @@ void s21_spec_o(char *str, va_list *args, format_struct *config, int *index);
 void s21_spec_u(char *str, va_list *args, format_struct *config, int *index);
 void s21_spec_x(char *str, va_list *args, format_struct *config, int *index,
                 int flag);
-void s21_spec_n(char *str, va_list *args);
+void s21_spec_n(char *str, va_list *args, int *index);
 void s21_spec_p(char *str, va_list *args, format_struct *config, int *index);
 void s21_spec_s(char *str, va_list *args, format_struct *config, int *index);
 void s21_spec_e(char *str, long double number, format_struct *config,
