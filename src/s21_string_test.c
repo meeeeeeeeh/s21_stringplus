@@ -36,7 +36,7 @@ END_TEST
 START_TEST(s21_memchr_test_4) {
   s21_size_t len = 12;
   char str[] = "ma\n\r";
-  char chr = '\n';
+  char chr = 'n';
   ck_assert_pstr_eq(s21_memchr(str, chr, len), memchr(str, chr, len));
 }
 END_TEST
